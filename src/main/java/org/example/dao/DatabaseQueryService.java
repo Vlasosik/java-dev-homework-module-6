@@ -210,36 +210,4 @@ public class DatabaseQueryService {
         }
         return projectPrices;
     }
-
-    public static class DatabaseInitService {
-
-        public static void main(String[] args) {
-
-            try (BufferedReader reader = new BufferedReader(new FileReader("sql/init_db.sql"))) {
-                Connection connection = Database.getInstance().getConnection();
-                ScriptRunner scriptRunner = new ScriptRunner(connection);
-                scriptRunner.runScript(reader);
-                System.out.println("Database initialization successfully!");
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } finally {
-                Database.closeConnection();
-            }
-        }
-    }
-
-    public static class DatabasePopulateService {
-        public static void main(String[] args) {
-            try (BufferedReader reader = new BufferedReader(new FileReader("sql/populate_db.sql"))) {
-                Connection connection = Database.getInstance().getConnection();
-                ScriptRunner scriptRunner = new ScriptRunner(connection);
-                scriptRunner.runScript(reader);
-                System.out.println("Database populated successfully!");
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } finally {
-                Database.closeConnection();
-            }
-        }
-    }
 }
