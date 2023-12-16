@@ -1,10 +1,9 @@
 package org.example.dao;
 
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.example.util.Database;
 import org.example.pojo.LongestProject;
 import org.example.pojo.ProjectPrices;
 import org.example.pojo.YoungestOldestWorkers;
+import org.example.util.Database;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -21,44 +20,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class DatabaseQueryService {
-    private static final String SELECT_LONGEST_PROJECT = """
-                   SELECT project.ID,
-                   EXTRACT(MONTH FROM project.START_DATE) AS START_MONTH,
-                   EXTRACT(MONTH FROM project.FINISH_DATE) AS FINISH_MONTH
-                   FROM project
-                   ORDER BY START_MONTH, FINISH_MONTH DESC;
-            """;
-    private static final String SELECT_MAX_PROJECT_CLIENT = """
-                   SELECT client.NAME, COUNT(project.CLIENT_ID) AS PROJECT_COUNT
-                   FROM project
-                   JOIN client ON project.CLIENT_ID = CLIENT.ID
-                   GROUP BY client.NAME
-                   ORDER BY PROJECT_COUNT DESC;
-            """;
-    private static final String SELECT_MAX_SALARY_WORKER = """
-                    SELECT NAME,SALARY FROM worker
-                    WHERE SALARY = (SELECT MAX(SALARY) FROM worker);
-            """;
-    private static final String SELECT_YOUNGEST_WORKERS = """
-                   SELECT 'YOUNGEST' AS TYPE, NAME, BIRTHDAY
-                   FROM worker
-                   WHERE BIRTHDAY = (SELECT MIN(BIRTHDAY) FROM worker)
-                   UNION
-                   SELECT 'ELDEST' AS TYPE, NAME, BIRTHDAY
-                   FROM worker
-                   WHERE BIRTHDAY = (SELECT MAX(BIRTHDAY) FROM worker)
-                   ORDER BY BIRTHDAY ASC;                    
-            """;
-    private static final String SELECT_PROJECT_PRICES = """
-                   SELECT project_worker.WORKER_ID AS WORKER_ID,
-            	   SUM(worker.SALARY * EXTRACT(MONTH FROM project.START_DATE) * EXTRACT(YEAR FROM project.FINISH_DATE)) AS PRICE
-                   FROM project
-                   JOIN project_worker ON project.ID = project_worker.PROJECT_ID
-                   JOIN worker ON project_worker.WORKER_ID = worker.ID
-                   GROUP BY project_worker.WORKER_ID
-                   ORDER BY PRICE DESC;    
-            """;
-
     public static void main(String[] args) {
         printLongestProject();
         printFindClientWithMaxProject();
@@ -117,7 +78,7 @@ public class DatabaseQueryService {
     private List<LongestProject> longestProjects() {
         List<LongestProject> longestProjects = new ArrayList<>();
         try (Connection connection = Database.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_LONGEST_PROJECT);
+             PreparedStatement preparedStatement = connection.prepareStatement(readSqlFile("sql/find_longest_project.sql"));
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 LongestProject project = new LongestProject();
@@ -137,7 +98,7 @@ public class DatabaseQueryService {
     private Map<String, Long> findClientWithMaxProjects() {
         Map<String, Long> findClientWithMaxProjects = new TreeMap<>();
         try (Connection connection = Database.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_MAX_PROJECT_CLIENT);
+             PreparedStatement preparedStatement = connection.prepareStatement(readSqlFile("sql/find_max_projects_client.sql"));
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 String name = resultSet.getString("name");
@@ -155,7 +116,7 @@ public class DatabaseQueryService {
     private Map<String, BigDecimal> maxSalaryWorker() {
         Map<String, BigDecimal> maxSalaryWorker = new TreeMap<>();
         try (Connection connection = Database.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_MAX_SALARY_WORKER);
+             PreparedStatement preparedStatement = connection.prepareStatement(readSqlFile("sql/find_max_salary_worker.sql"));
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 String name = resultSet.getString("name");
@@ -173,7 +134,7 @@ public class DatabaseQueryService {
     private List<YoungestOldestWorkers> youngestOldestWorkers() {
         List<YoungestOldestWorkers> youngestOldestWorkers = new ArrayList<>();
         try (Connection connection = Database.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_YOUNGEST_WORKERS);
+             PreparedStatement preparedStatement = connection.prepareStatement(readSqlFile("sql/find_youngest_eldest_workers.sql"));
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 YoungestOldestWorkers project = new YoungestOldestWorkers();
@@ -194,7 +155,7 @@ public class DatabaseQueryService {
     private List<ProjectPrices> projectPrices() {
         List<ProjectPrices> projectPrices = new ArrayList<>();
         try (Connection connection = Database.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_PROJECT_PRICES);
+             PreparedStatement preparedStatement = connection.prepareStatement(readSqlFile("sql/print_project_prices.sql"));
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 ProjectPrices project = new ProjectPrices();
@@ -209,5 +170,18 @@ public class DatabaseQueryService {
             Database.closeConnection();
         }
         return projectPrices;
+    }
+
+    private String readSqlFile(String filePath) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line).append("\n");
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return stringBuilder.toString();
     }
 }
