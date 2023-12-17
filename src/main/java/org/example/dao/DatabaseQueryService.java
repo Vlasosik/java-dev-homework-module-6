@@ -21,15 +21,16 @@ import java.util.TreeMap;
 
 public class DatabaseQueryService {
     public static void main(String[] args) {
-        printLongestProject();
-        printFindClientWithMaxProject();
-        printMaxSalaryWorker();
-        printYoungestOldestWorkers();
-        printProjectPrices();
+        DatabaseQueryService databaseQueryService = new DatabaseQueryService();
+        databaseQueryService.printLongestProject();
+        databaseQueryService.printFindClientWithMaxProject();
+        databaseQueryService.printMaxSalaryWorker();
+        databaseQueryService.printYoungestOldestWorkers();
+        databaseQueryService.printProjectPrices();
     }
 
-    public static void printLongestProject() {
-        List<LongestProject> longestProjects = new DatabaseQueryService().longestProjects();
+    public void printLongestProject() {
+        List<LongestProject> longestProjects = longestProjects();
         for (LongestProject project : longestProjects) {
             System.out.println("projectID: " + project.getId());
             System.out.println("start Month: " + project.getStartMonth());
@@ -38,8 +39,8 @@ public class DatabaseQueryService {
         }
     }
 
-    public static void printFindClientWithMaxProject() {
-        Map<String, Long> findClientWithMaxProjects = new DatabaseQueryService().findClientWithMaxProjects();
+    public void printFindClientWithMaxProject() {
+        Map<String, Long> findClientWithMaxProjects = findClientWithMaxProjects();
         for (Map.Entry<String, Long> project : findClientWithMaxProjects.entrySet()) {
             System.out.println("name: " + project.getKey());
             System.out.println("projectCount: " + project.getValue());
@@ -47,8 +48,8 @@ public class DatabaseQueryService {
         System.out.println("---------------------");
     }
 
-    public static void printMaxSalaryWorker() {
-        Map<String, BigDecimal> printMaxSalaryWorker = new DatabaseQueryService().maxSalaryWorker();
+    public void printMaxSalaryWorker() {
+        Map<String, BigDecimal> printMaxSalaryWorker = maxSalaryWorker();
         for (Map.Entry<String, BigDecimal> listSalary : printMaxSalaryWorker.entrySet()) {
             System.out.println("name: " + listSalary.getKey());
             System.out.println("salary: " + listSalary.getValue());
@@ -56,8 +57,8 @@ public class DatabaseQueryService {
         System.out.println("---------------------");
     }
 
-    public static void printYoungestOldestWorkers() {
-        List<YoungestOldestWorkers> printYoungestOldestWorkers = new DatabaseQueryService().youngestOldestWorkers();
+    public void printYoungestOldestWorkers() {
+        List<YoungestOldestWorkers> printYoungestOldestWorkers = youngestOldestWorkers();
         for (YoungestOldestWorkers listWorkers : printYoungestOldestWorkers) {
             System.out.println("text: " + listWorkers.getText());
             System.out.println("name: " + listWorkers.getName());
@@ -66,8 +67,8 @@ public class DatabaseQueryService {
         System.out.println("---------------------");
     }
 
-    public static void printProjectPrices() {
-        List<ProjectPrices> printProjectPrices = new DatabaseQueryService().projectPrices();
+    public void printProjectPrices() {
+        List<ProjectPrices> printProjectPrices = projectPrices();
         for (ProjectPrices project : printProjectPrices) {
             System.out.println("workerId: " + project.getWorkerId());
             System.out.println("price: " + project.getPrice());
